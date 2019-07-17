@@ -17,8 +17,7 @@ Install
 - [python 3+](https://www.python.org/downloads/release) (Use the 32-bit version on Windows, because pyEnchant does not support Win64)
 - [vapoursynth](https://github.com/vapoursynth/vapoursynth/releases)
 - [tesseract](https://github.com/tesseract-ocr/tesseract/wiki/Downloads).
-(Make sure to use the [official training data](https://github.com/tesseract-ocr/tesseract/wiki/Data-Files). The one included in the Windows setup by UB Mannheim is faulty and needs to be replaced.)
-- (optionnal) [Vapoursynth Editor](https://bitbucket.org/mystery_keeper/vapoursynth-editor/downloads/)
+(Make sure to use the [official training data set](https://github.com/tesseract-ocr/tesseract/wiki/Data-Files). The one included in the Windows setup by UB Mannheim is faulty and needs to be replaced.)
 
 Python, ffmpeg and vspipe (vapoursynth) should be in the PATH
 
@@ -135,5 +134,5 @@ optional arguments:
                         general detection threshold. lower values lead to more
                         detected subs.
 ```
-You need to specify the height and the dimensions of the box the subtitles are contained in. So for example:
-`python3 pythoCR.py /myVideos/vid01.mp4 -l eng --sub-format ass --width 980 --height 140 --cropbox_y 20`. 
+You need to specify the height (relative to the bottom) and the dimensions of the box the subtitles are contained in. So for example:
+`python pythoCR.py /myVideos/vid01.mp4 -l eng --sub-format ass --width 980 --height 140 --cropbox_y 20`. 
