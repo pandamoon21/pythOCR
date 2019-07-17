@@ -282,7 +282,19 @@ def check_sub_data(sub_data):
 
 def new_filter_only(path, outputdir):
     logging.info("Starting to filter file %s" % path)
-    vscmd = "\"%s\" -y -p --arg FichierSource=\"%s\" --arg dir=\"%s\" \"%s\" -" % (args.vapoursynth_path, os.path.abspath(path), os.path.abspath(outputdir), os.path.abspath(args.vpy))
+    params = " --arg ".join(["Source=" + path.replace("\\", "\\\\"),
+                             "OutputDir=" + outputdir,
+                             "width=" + str(args.width),
+                             "height=" + str(args.height),
+                             "CropBox_y=" + str(args.CropBox_y),
+                             "CropBoxAlt_y=" + str(args.CropBoxAlt_y),
+                             "Supersampling=" + str(args.Supersampling),
+                             "ExpandRatio=" + str(args.ExpandRatio),
+                             "Resampler=" + str(args.Resampler),
+                             "WhiteThresh=" + str(args.WhiteThresh),
+                             "BlackThresh=" + str(args.BlackThresh),
+                             "DetectionThresh=" + str(args.DetectionThresh)])
+    vscmd = f"'{args.vapoursynth_path}' -y -p --arg " + params + f" '{args.vpy}' -"
     logging.debug("Command used: %s" % vscmd)
     with open(os.devnull, 'w') as fnull:
         subprocess.call(shlex.split(vscmd), stdout=fnull)
@@ -450,7 +462,7 @@ if __name__ == '__main__':
                 choices=['full', 'filter', 'ocr'], default='full',
                 help='Set the processing mode. "filter" to only start the filtering jobs, "ocr" to process already filtered videos, "full" for both. (default: full)')
     argparser.add_argument(
-                '--vpy', dest='vpy', metavar='vpy_file', type=str, default=None,
+                '--vpy', dest='vpy', metavar='vpy_file', type=str, default="extract_subs.vpy",
                 help='vapoursynth file to use for filtering (required for "filter only" and "full" modes')
     argparser.add_argument(
                 '--threads', dest='threads', metavar='number', type=int, default=multiprocessing.cpu_count(),
@@ -478,6 +490,35 @@ if __name__ == '__main__':
                 '--vapoursynth-path', dest='vapoursynth_path', metavar='path to vspipe binary',
                 type=str, default="vspipe",
                 help='The path to call vapoursynth (default: vspipe)')
+    argparser.add_argument(
+                '--width', dest="width", metavar="number", help="width of the box containing the subtitles in pixels")
+    argparser.add_argument(
+                '--height', dest="height", metavar="number", help="height of the box containing the subtitles in pixels")
+    argparser.add_argument(
+                '--cropbox_y', dest="CropBox_y", metavar="number", help="height of the subtitle box relative to the bottom in pixels")
+    argparser.add_argument(
+                '--cropbox-alt_y', dest="CropBoxAlt_y", metavar="number", default=-1,
+                help="height of the alternative subtitle box (\\an8) relative to the bottom in pixels. -1 to disable (default)")
+    argparser.add_argument(
+                '--supersampling', dest="Supersampling", metavar="number", default=-1,
+                help="Supersampling factor. -1 to disable (default)")
+    argparser.add_argument(
+                '--expand-ratio', dest="ExpandRatio", metavar="number", default=1,
+                help="no idea, just read the code xd")
+    argparser.add_argument(
+                '--resampler', dest="Resampler", metavar="mode", choices=["sinc", "nnedi3", "waifu2x"], default="sinc",
+                help="scaling algorithm to use")
+    argparser.add_argument(
+                '--white-thresh', dest="WhiteThresh", metavar="number", default=230,
+                help="color threshold of the inner subtitles")
+    argparser.add_argument(
+                '--black-thresh', dest="BlackThresh", metavar="number", default=80,
+                help="color threshold of the outer subtitles (the black border)")
+    argparser.add_argument(
+                '--detect-thresh', dest="DetectionThresh", metavar="number", default=0.03,
+                help="general detection threshold. lower values lead to more detected subs.")
+
+
     args = argparser.parse_args()
 
     if not os.path.isdir(args.outputdir):
@@ -536,3 +577,6 @@ if __name__ == '__main__':
     if not args.mode == "filter":
         for subsdata, path in subsdatalist:
             post_process_subs(subsdata, args.outputdir, path)
+        
+
+
