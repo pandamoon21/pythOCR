@@ -1,3 +1,5 @@
+#### The only notable difference of this fork is that it doesn’t depend on pyEnchant anymore, which has been discontinued and doesn’t support 64 bit.
+
 A python program to OCR videos
 
 Adapted (aka shamelessly stolen) from the bash based video OCR Yolocr (https://git.clapity.eu/Id/YoloCR)
@@ -11,7 +13,8 @@ Requirements
 Install 
 - [python 3+](https://www.python.org/downloads/release) (Use the 32-bit version on Windows, because pyEnchant does not support Win64)
 - [vapoursynth](https://github.com/vapoursynth/vapoursynth/releases)
-- [tesseract](https://github.com/tesseract-ocr/tesseract/wiki/Downloads)
+- [tesseract](https://github.com/tesseract-ocr/tesseract/wiki/Downloads).
+(Make sure to use the [official training data](https://github.com/tesseract-ocr/tesseract/wiki/Data-Files). The one included in the Windows setup by UB Mannheim are faulty and need to be replaced.)
 - (optionnal) [Vapoursynth Editor](https://bitbucket.org/mystery_keeper/vapoursynth-editor/downloads/)
 
 Python, ffmpeg and vspipe (vapoursynth) should be in the PATH
@@ -25,7 +28,7 @@ Install vapoursynth plugins:
 
 Install (from pip) python prerequisites:
 
-`$pip3 install colorama configargparse pyEnchant numpy opencv-python tqdm`
+`$pip3 install colorama configargparse spellchecker numpy opencv-python tqdm`
 
 Installation
 ============
@@ -108,3 +111,5 @@ optional arguments:
 ```
 
 So to process the video /myVideos/vid01.mp4, the command would be `python3 pythoCR.py -c <myconfig> --vpy <myvpy> /myVideos/vid01.mp4`
+
+The vpy file in exemples/ needs to be modified by hand to set the crop parameters to fit your source. 
