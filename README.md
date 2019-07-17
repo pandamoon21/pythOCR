@@ -14,7 +14,7 @@ Install
 - [python 3+](https://www.python.org/downloads/release) (Use the 32-bit version on Windows, because pyEnchant does not support Win64)
 - [vapoursynth](https://github.com/vapoursynth/vapoursynth/releases)
 - [tesseract](https://github.com/tesseract-ocr/tesseract/wiki/Downloads).
-(Make sure to use the [official training data](https://github.com/tesseract-ocr/tesseract/wiki/Data-Files). The one included in the Windows setup by UB Mannheim are faulty and need to be replaced.)
+(Make sure to use the [official training data](https://github.com/tesseract-ocr/tesseract/wiki/Data-Files). The one included in the Windows setup by UB Mannheim is faulty and needs to be replaced.)
 - (optionnal) [Vapoursynth Editor](https://bitbucket.org/mystery_keeper/vapoursynth-editor/downloads/)
 
 Python, ffmpeg and vspipe (vapoursynth) should be in the PATH
