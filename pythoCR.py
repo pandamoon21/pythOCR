@@ -463,7 +463,7 @@ if __name__ == '__main__':
                 help='Set the processing mode. "filter" to only start the filtering jobs, "ocr" to process already filtered videos, "full" for both. (default: full)')
     argparser.add_argument(
                 '--vpy', dest='vpy', metavar='vpy_file', type=str, default="extract_subs.vpy",
-                help='vapoursynth file to use for filtering (required for "filter only" and "full" modes')
+                help='vapoursynth file to use for filtering (default: extract_subs.vpy)')
     argparser.add_argument(
                 '--threads', dest='threads', metavar='number', type=int, default=multiprocessing.cpu_count(),
                 help='Number of threads the script will use (default: automatic detection)')
