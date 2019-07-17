@@ -1,4 +1,7 @@
-#### The only notable difference of this fork is that it doesn’t depend on pyEnchant anymore, which has been discontinued and doesn’t support 64 bit.
+#### Notable differences of this fork are:
+- It doesn’t depend on pyEnchant anymore, which has been discontinued and doesn’t have any 64 Windows builds.
+- It allows the filter parameters in the vpy file to be set via command line arguments of the main script.
+- It’s likely even more broken than the original because I can’t code for shit.
 
 A python program to OCR videos
 
@@ -50,7 +53,11 @@ usage: PythoCR [-h] [--version] [-c CONFIG] [-l language] [-wd folder]
                [--threads number] [--auto-same-sub-threshold number]
                [--same-sub-threshold number] [--no-spellcheck] [-t] [-d]
                [--tesseract-path path to tesseract binary]
-               [--vapoursynth-path path to vspipe binary]
+               [--vapoursynth-path path to vspipe binary] [--width number]
+               [--height number] [--cropbox_y number] [--cropbox-alt_y number]
+               [--supersampling number] [--expand-ratio number]
+               [--resampler mode] [--white-thresh number]
+               [--black-thresh number] [--detect-thresh number]
                path [path ...]
 
 Filters a video and extracts subtitles as srt or ass. Args that start with
@@ -87,8 +94,7 @@ optional arguments:
   --mode mode           Set the processing mode. "filter" to only start the
                         filtering jobs, "ocr" to process already filtered
                         videos, "full" for both. (default: full)
-  --vpy vpy_file        vapoursynth file to use for filtering (required for
-                        "filter only" and "full" modes
+  --vpy vpy_file        vapoursynth file to use for filtering (default: extract_subs.vpy)
   --threads number      Number of threads the script will use (default:
                         automatic detection)
   --auto-same-sub-threshold number
@@ -108,8 +114,26 @@ optional arguments:
                         The path to call tesseract (default: tesseract)
   --vapoursynth-path path to vspipe binary
                         The path to call vapoursynth (default: vspipe)
+  --width number        width of the box containing the subtitles in pixels
+  --height number       height of the box containing the subtitles in pixels
+  --cropbox_y number    height of the subtitle box relative to the bottom in
+                        pixels
+  --cropbox-alt_y number
+                        height of the alternative subtitle box (\an8) relative
+                        to the bottom in pixels. -1 to disable (default)
+  --supersampling number
+                        Supersampling factor. -1 to disable (default)
+  --expand-ratio number
+                        no idea, just read the code xd
+  --resampler mode      scaling algorithm to use
+  --white-thresh number
+                        color threshold of the inner subtitles
+  --black-thresh number
+                        color threshold of the outer subtitles (the black
+                        border)
+  --detect-thresh number
+                        general detection threshold. lower values lead to more
+                        detected subs.
 ```
-
-So to process the video /myVideos/vid01.mp4, the command would be `python3 pythoCR.py -c <myconfig> --vpy <myvpy> /myVideos/vid01.mp4`
-
-The vpy file in exemples/ needs to be modified by hand to set the crop parameters to fit your source. 
+You need to specify the height and the dimensions of the box the subtitles are contained in. So for example:
+`python3 pythoCR.py /myVideos/vid01.mp4 -l eng --sub-format ass --width 980 --height 140 --cropbox_y 20`. 
