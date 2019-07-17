@@ -1,5 +1,5 @@
 import configargparse
-import enchant
+from spellchecker import SpellChecker
 import logging
 import multiprocessing
 import os
@@ -23,6 +23,10 @@ media_ext = {".mp4", ".mkv", ".avi"}
 last_frame = 0
 video_fps = 0
 
+spell = SpellChecker()
+def is_word(word):
+    return spell.known([word]) == {word}
+
 
 def show_diff(seqm):
     """Unify operations between two compared strings
@@ -42,12 +46,11 @@ seqm is a difflib.SequenceMatcher instance whose a & b are strings"""
 
 def analyse_word_count(sub_data, language):
     word_count = dict()
-    enchant_dict = enchant.Dict({"eng": "en_US", "fra": "fr_FR"}[language])
     for idx in range(0, len(sub_data)):
         for word in re.findall(r"\w+", strip_tags(sub_data[idx][0]), flags=re.UNICODE):
-            if enchant_dict.check(word):
+            if is_word(word):
                 try:
-                    word_count[word] = word_count[word] + 1
+                    word_count[word] += 1
                 except KeyError:
                     word_count[word] = 1
     return word_count
@@ -83,8 +86,8 @@ def user_input_replace_confirm(word, substitutes, fullstring):
                 continue
 
 
-def extreme_try_word_without_char(word, fullstring, chars_to_try_to_replace, enchant_dict, word_count):
-    if enchant_dict.check(word):
+def extreme_try_word_without_char(word, fullstring, chars_to_try_to_replace, word_count):
+    if is_word(word):
         return word
     else:
         substitutes = {word}
@@ -92,7 +95,7 @@ def extreme_try_word_without_char(word, fullstring, chars_to_try_to_replace, enc
             raw_subst = [filler(word, char, replacement) for word in substitutes]
             substitutes = set([subst for sublist in raw_subst for subst in sublist])
         # Get a list of acceptable substitutes with their corresponding distance
-        substitutes = [(substitute, difflib.SequenceMatcher(None, word, substitute).ratio()) for substitute in list(set(substitutes)) if enchant_dict.check(substitute)]
+        substitutes = [(substitute, difflib.SequenceMatcher(None, word, substitute).ratio()) for substitute in list(set(substitutes)) if is_word(substitute)]
         if len(substitutes) > 0:
             logging.debug("Heuristic - Found bad word \"%s\", possibles substitutes are \"%s\"" % (word, str(substitutes)))
             if args.timid:
@@ -106,18 +109,17 @@ def extreme_try_word_without_char(word, fullstring, chars_to_try_to_replace, enc
     return word
 
 
-def extreme_try_string_without_char(string, chars_to_try_to_replace, enchant_dict, word_count):
+def extreme_try_string_without_char(string, chars_to_try_to_replace, word_count):
     for word in re.findall(r"\w+[" + re.escape("".join([char[0] for char in chars_to_try_to_replace])) + r"]\w+", string, flags=re.UNICODE):
-        substitute = extreme_try_word_without_char(word, string, chars_to_try_to_replace, enchant_dict, word_count)
+        substitute = extreme_try_word_without_char(word, string, chars_to_try_to_replace, word_count)
         if substitute != word:
             re.sub(r"(\W)" + re.escape(word) + r"(\W)", "\\1" + substitute + "\\2", string, flags=re.UNICODE)
     return string
 
 
 def extreme_try_subs_without_char(sub_data, chars_to_try_to_replace, language, word_count):
-    enchant_dict = enchant.Dict({"eng": "en_US", "fra": "fr_FR"}[language])
     for idx in range(0, len(sub_data)):
-        sub_data[idx] = (extreme_try_string_without_char(sub_data[idx][0], chars_to_try_to_replace, enchant_dict, word_count), sub_data[idx][1])
+        sub_data[idx] = (extreme_try_string_without_char(sub_data[idx][0], chars_to_try_to_replace, word_count), sub_data[idx][1])
     return sub_data
 
 
@@ -126,7 +128,7 @@ def new_ocr_image(arg_tuple):
     img_path = scene[2]
     result_base = os.path.splitext(img_path)[0]
     
-    tess_cmd = [args.tesseract_path, img_path, "stdout", "-l", language, "-psm", "6", "hocr"]
+    tess_cmd = [args.tesseract_path, img_path, "stdout", "-l", language, "--psm", "6", "hocr"]
     html_content = subprocess.check_output(tess_cmd, stderr=subprocess.DEVNULL).decode('utf-8')
         
     # Convert to text only
@@ -209,14 +211,13 @@ def convert_to_ass(sub_data, mp4_path):
             if len(data[0]) > 0:
                 starttime = sec_to_time(float(data[1][0]) / video_fps)
                 endtime = sec_to_time((float(data[1][1]) / video_fps))
-                text = data[0].replace("\n", "\\N").replace("<i>", "{\\i1}").replace("</i>", "{\\i0}").replace("<font color=\"#ffff00\">", "{\\an8}").replace("</font>", "{\\an}").replace("}{", "")
+                text = data[0].replace("\n", " ").replace("<i>", "{\\i1}").replace("</i>", "{\\i0}").replace("<font color=\"#ffff00\">", "{\\an8}").replace("</font>", "{\\an}").replace("}{", "")
                 ofile.write(u'Dialogue: 0,'+starttime+','+endtime+',Default,,0,0,0,,'+text+u'\n')
 
 
 def score_lines(line_a, line_b, language):
-    enchant_dict = enchant.Dict({"eng": "en_US", "fra": "fr_FR"}[language])
-    score_a = sum([1 for word in re.findall(r"\w+", strip_tags(line_a), re.UNICODE) if enchant_dict.check(word)])
-    score_b = sum([1 for word in re.findall(r"\w+", strip_tags(line_b), re.UNICODE) if enchant_dict.check(word)])
+    score_a = sum([1 for word in re.findall(r"\w+", strip_tags(line_a), re.UNICODE) if is_word(word)])
+    score_b = sum([1 for word in re.findall(r"\w+", strip_tags(line_b), re.UNICODE) if is_word(word)])
     if score_a > score_b:
         return line_a
     else:
@@ -535,6 +536,3 @@ if __name__ == '__main__':
     if not args.mode == "filter":
         for subsdata, path in subsdatalist:
             post_process_subs(subsdata, args.outputdir, path)
-        
-
-
