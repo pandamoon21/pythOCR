@@ -1,22 +1,24 @@
 import configargparse
-from spellchecker import SpellChecker
+import difflib
+import json
 import logging
 import multiprocessing
 import os
+import math
+import pdb
 import re
-import json
 import shlex
 import shutil
 import subprocess
-import pdb
-from colorama import init, Fore, Style
-import difflib
+
 from itertools import product
+from colorama import init, Fore, Style
+from multiprocessing.dummy import Pool as ThreadPool 
+from spellchecker import SpellChecker
 from tqdm import tqdm
 # from userconfig.userconfig import regex_replace, chars_to_try_to_replace, auto_same_sub_threshold, same_sub_threshold
-from multiprocessing.dummy import Pool as ThreadPool 
 
-VERSION = "2.04"
+VERSION = "2.05"
 
 media_ext = {".mp4", ".mkv", ".avi"}
 
@@ -141,12 +143,29 @@ def new_ocr_image(arg_tuple):
     pbar.update(1)
     return text, (scene[0], scene[1])
 
+# Fix time issues by someonelike-u
+def truncateDecimalNumber(number, decimals=0):
+    """
+    Returns a value truncated to a specific number of decimal places.
+    https://kodify.net/python/math/truncate-decimals/
+    """
+    if not isinstance(decimals, int):
+        raise TypeError("decimal places must be an integer.")
+    elif decimals < 0:
+        raise ValueError("decimal places has to be 0 or more.")
+    elif decimals == 0:
+        return math.trunc(number)
 
+    factor = 10.0 ** decimals
+    return math.trunc(number * factor) / factor
+
+# Refix the time for recent software
 def sec_to_time(secs):
     hours = secs / 3600
     minutes = (secs % 3600) / 60
     secs = secs % 60
-    return "%02d:%02d:%05.2f" % (hours, minutes, secs)
+    secs = truncateDecimalNumber(secs % 60, 2) # Truncate the decimal number, no rounding to avoid time issues (like for time plan) 
+    return "%02d:%02d:%05.2f" % (hours, minutes, secs) # Get always 2 digits before the comma and 2 digits after the comma
 
 
 def convert_to_srt(sub_data, mp4_path):
@@ -578,5 +597,3 @@ if __name__ == '__main__':
         for subsdata, path in subsdatalist:
             post_process_subs(subsdata, args.outputdir, path)
         
-
-
