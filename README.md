@@ -30,7 +30,7 @@ Install vapoursynth plugins:
 
 Install (from pip) python prerequisites:
 
-`$pip3 install colorama configargparse spellchecker numpy opencv-python tqdm`
+`$pip3 install colorama configargparse pyspellchecker numpy opencv-python tqdm`
 
 Installation
 ============
