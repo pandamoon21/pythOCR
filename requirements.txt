@@ -1,0 +1,7 @@
+colorama
+configargparse
+numpy
+opencv-python
+pyspellchecker
+tqdm
+typing
