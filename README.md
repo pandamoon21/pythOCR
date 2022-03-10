@@ -1,5 +1,4 @@
 # PythOCR
-============
 ## A python program to OCR videos
 
 Adapted ~~(aka shamelessly stolen)~~ from the bash based video OCR YolOCR
